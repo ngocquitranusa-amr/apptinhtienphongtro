@@ -14,7 +14,7 @@ st.set_page_config(
 
 
 def vnd(amount):
-    return f"{amount:,.0f} đ".replace(",", ".")
+    return f"{amount:,.0f} VND".replace(",", ".")
 
 
 def split_amount(total, weights):
@@ -64,11 +64,11 @@ st.subheader("2. Hóa đơn của cả nhà")
 rent_col, wifi_col = st.columns(2)
 with rent_col:
     rent_total = st.number_input(
-        "Tổng tiền phòng kỳ này (đ)", min_value=0, value=6000000, step=100000
+        "Tổng tiền phòng kỳ này (VND)", min_value=0, value=6000000, step=100000
     )
 with wifi_col:
     wifi_total = st.number_input(
-        "Tiền Wi-Fi kỳ này (đ)", min_value=0, value=200000, step=10000
+        "Tiền Wi-Fi kỳ này (VND)", min_value=0, value=200000, step=10000
     )
 
 electric_col1, electric_col2, electric_col3 = st.columns(3)
@@ -82,7 +82,7 @@ with electric_col2:
     )
 with electric_col3:
     electric_rate = st.number_input(
-        "Giá điện mỗi kWh (đ)", min_value=0, value=3500, step=100
+        "Giá điện mỗi kWh (VND)", min_value=0, value=3500, step=100
     )
 
 water_col1, water_col2, water_col3 = st.columns(3)
@@ -96,7 +96,7 @@ with water_col2:
     )
 with water_col3:
     water_rate = st.number_input(
-        "Giá nước mỗi m³ (đ)", min_value=0, value=15000, step=500
+        "Giá nước mỗi m³ (VND)", min_value=0, value=15000, step=500
     )
 
 extra_total = st.number_input(
@@ -104,6 +104,13 @@ extra_total = st.number_input(
     min_value=0,
     value=0,
     step=10000,
+)
+
+budget_total = st.number_input(
+    "Ngân sách tối đa cho cả nhà trong kỳ này (VND; nhập 0 nếu không đặt)",
+    min_value=0,
+    value=0,
+    step=500000,
 )
 
 electric_valid = electric_new >= electric_old
@@ -246,6 +253,19 @@ st.caption(
     f"Tổng cả nhà: {vnd(rent_total + shared_total)}"
 )
 
+full_total = rent_total + shared_total
+if budget_total > 0:
+    budget_ratio = min(full_total / budget_total, 1.0)
+    st.progress(
+        budget_ratio,
+        text=f"Đã dùng {vnd(full_total)} / ngân sách {vnd(budget_total)}",
+    )
+    if full_total > budget_total:
+        st.warning(f"Tổng chi phí vượt ngân sách {vnd(full_total - budget_total)}.")
+    else:
+        st.success(f"Còn {vnd(budget_total - full_total)} trong ngân sách.")
+
+
 for result in results:
     with st.container(border=True):
         st.markdown(f"### 👤 {result['Tên']} — **{vnd(result['Tổng cần đóng'])}**")
@@ -276,3 +296,4 @@ st.caption(
     "Lưu ý: app chỉ tính và chia chi phí. Giá điện/nước nhập theo hóa đơn hoặc "
     "thỏa thuận thực tế; dữ liệu không được lưu lại khi tải lại trang."
 )
+
